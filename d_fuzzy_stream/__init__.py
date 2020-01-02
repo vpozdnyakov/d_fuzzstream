@@ -6,7 +6,7 @@ class dFuzzyStream:
     def __init__(
         self, 
         min_fc=5, 
-        max_fc=100, 
+        max_fc=200, 
         threshold=1, 
         fuzziness=2):
         
@@ -15,7 +15,6 @@ class dFuzzyStream:
         self.threshold = threshold
         self.fuzziness = fuzziness
 
-        self.m_degrees = dict()
         self.fclusters = set()
 
         self.test = False
@@ -32,7 +31,6 @@ class dFuzzyStream:
             if len(self.fclusters) < self.min_fc:
                 fc = FuzzyCluster(i_example)
                 self.fclusters.add(fc)
-                self.m_degrees[fc] = {i_example: 1} #?
                 if self.test: self.creations += 1
             else:
                 all_dist = self.distances(i_example)
@@ -46,18 +44,17 @@ class dFuzzyStream:
                     if all_dist[i_fc] <= radius:
                         is_outlier = False
                         i_fc.timestamp = datetime.today().timestamp()
-                        if self.test: self.absorptions += 1
                 if is_outlier:
                     if len(self.fclusters) == self.max_fc:
                         self.remove_oldest()
                         if self.test: self.removals += 1
                     fc = FuzzyCluster(i_example)
                     self.fclusters.add(fc)
-                    self.m_degrees[fc] = {i_example: 1}
                     if self.test: self.creations += 1
                 else:
-                    self.update_m_degrees(i_example, all_dist)
-                    self.update_fclusters(i_example, all_dist)
+                    m_degrees = self.calc_m_degrees(all_dist)
+                    self.update_fclusters(i_example, all_dist, m_degrees)
+                    if self.test: self.absorptions += 1
                 self.merge_fclusters()
         if self.test: self.evaluate_purity(datastream)
     
@@ -82,7 +79,7 @@ class dFuzzyStream:
         return (((a[0]-b[0])**2 + (a[1]-b[1])**2) ** (1/2))
 
     def min_distance(self, i_fc):
-        res = 100
+        res = 999999
         for j_fc in self.fclusters:
             if i_fc == j_fc: continue
             res = min(res, self.euclidean_distance(i_fc.prototype(), j_fc.prototype()))
@@ -103,14 +100,16 @@ class dFuzzyStream:
                 self.fclusters.remove(i_fc)
                 return
 
-    def update_m_degrees(self, i_example, all_dist):
+    def calc_m_degrees(self, all_dist):
+        m_degrees = dict()
         for i_fc in self.fclusters:
             i_dist = all_dist[i_fc]
             m_degree = 0
             for j_fc in self.fclusters:
                 j_dist = all_dist[j_fc]
                 m_degree += (i_dist/j_dist) ** (2./(self.fuzziness-1))
-            self.m_degrees[i_fc][i_example] = 1. / m_degree
+            m_degrees[i_fc] = 1. / m_degree
+        return m_degrees
     
     def to_dataframe(self):
         data = {'x': [], 'y': [], 'radius': [], 'new': []}
@@ -127,11 +126,11 @@ class dFuzzyStream:
 
         return pd.DataFrame(data)
 
-    def update_fclusters(self, i_example, all_dist):
+    def update_fclusters(self, i_example, all_dist, m_degrees):
         for i_fc in self.fclusters:
-            m_degree = self.m_degrees[i_fc][i_example]
+            m_degree = m_degrees[i_fc]
             dist = all_dist[i_fc]
-            i_fc.SSD += m_degree * dist ** 2
+            i_fc.SSD += (m_degree**self.fuzziness) * (dist**2)
             i_fc.CF += np.array(i_example) * m_degree
             i_fc.N += 1
             i_fc.M += m_degree
@@ -175,8 +174,3 @@ class FuzzyCluster:
 
     def prototype(self):
         return np.array(self.CF) / self.M
-
-data = pd.read_csv('BarsGaussAN0_10000.csv')
-datastream = data.head(9)
-fs = dFuzzyStream(threshold=1)
-fs.clustering(datastream)
