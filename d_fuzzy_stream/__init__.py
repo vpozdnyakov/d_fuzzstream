@@ -2,7 +2,7 @@ import pandas as pd
 import numpy as np
 from datetime import datetime
 
-class dFuzzyStream:
+class SummaryStructure:
     def __init__(
         self, 
         min_fc=5, 
@@ -29,7 +29,7 @@ class dFuzzyStream:
         for example in datastream.itertuples():
             i_example = tuple([example.x, example.y])
             if len(self.fclusters) < self.min_fc:
-                fc = FuzzyCluster(i_example)
+                fc = FMiC(i_example)
                 self.fclusters.add(fc)
                 if self.test: self.creations += 1
             else:
@@ -48,7 +48,7 @@ class dFuzzyStream:
                     if len(self.fclusters) == self.max_fc:
                         self.remove_oldest()
                         if self.test: self.removals += 1
-                    fc = FuzzyCluster(i_example)
+                    fc = FMiC(i_example)
                     self.fclusters.add(fc)
                     if self.test: self.creations += 1
                 else:
@@ -163,7 +163,7 @@ class dFuzzyStream:
                 data['radius'].append(i_fc.fuzzy_dispersion())
         return pd.DataFrame(data)
 
-class FuzzyCluster:
+class FMiC:
     def __init__(self, example):
         self.N = 1
         self.M = 1
