@@ -110,27 +110,13 @@ class dFuzzyStream:
                 m_degree += (i_dist/j_dist) ** (2./(self.fuzziness-1))
             m_degrees[i_fc] = 1. / m_degree
         return m_degrees
-    
-    def to_dataframe(self):
-        data = {'x': [], 'y': [], 'radius': [], 'new': []}
-        for i_fc in self.fclusters:
-            prototype = i_fc.prototype()
-            data['x'].append(prototype[0])
-            data['y'].append(prototype[1])
-            if i_fc.N == 1:
-                data['radius'].append(self.min_distance(i_fc))
-                data['new'].append(True)
-            else:
-                data['radius'].append(i_fc.fuzzy_dispersion())
-                data['new'].append(False)
-
-        return pd.DataFrame(data)
 
     def update_fclusters(self, i_example, all_dist, m_degrees):
         for i_fc in self.fclusters:
             m_degree = m_degrees[i_fc]
             dist = all_dist[i_fc]
-            i_fc.SSD += (m_degree**self.fuzziness) * (dist**2)
+            #i_fc.SSD += (m_degree**self.fuzziness) * (dist**2)
+            i_fc.SSD += m_degree * (dist**2)
             i_fc.CF += np.array(i_example) * m_degree
             i_fc.N += 1
             i_fc.M += m_degree
@@ -160,6 +146,22 @@ class dFuzzyStream:
         dist = self.euclidean_distance(i_fc.prototype(), j_fc.prototype())
         similarity = sum_radius / dist
         return similarity
+
+    def to_dataframe(self):
+        data = {'x': [], 'y': [], 'radius': [], 'N': [], 'M': [], 'SSD': [], 'CF': []}
+        for i_fc in self.fclusters:
+            prototype = i_fc.prototype()
+            data['x'].append(prototype[0])
+            data['y'].append(prototype[1])
+            data['N'].append(i_fc.N)
+            data['M'].append(i_fc.M)
+            data['SSD'].append(i_fc.SSD)
+            data['CF'].append(i_fc.CF)
+            if i_fc.N == 1:
+                data['radius'].append(self.min_distance(i_fc))
+            else:
+                data['radius'].append(i_fc.fuzzy_dispersion())
+        return pd.DataFrame(data)
 
 class FuzzyCluster:
     def __init__(self, example):
