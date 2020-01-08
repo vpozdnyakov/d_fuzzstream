@@ -1,4 +1,3 @@
-from importlib import reload
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
@@ -48,7 +47,7 @@ for _ in range(n):
     ax.set_ylim([0,1])
     plot(fig, ax)
 
-with imageio.get_writer('gif/ds_plot.gif', mode='I') as writer:
+with imageio.get_writer('gif/ds_demo.gif', mode='I') as writer:
     for i in range(n):
         filename = 'gif/sample_plot{}.png'.format(i+1)
         writer.append_data(imageio.imread(filename))

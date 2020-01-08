@@ -1,1 +1,1 @@
-![online clustering](gif/ds_plot.gif)
+![online clustering](gif/ds_demo.gif)
