@@ -2,7 +2,7 @@
 
 Python implementation of the fuzzy data stream clustering algorithm from the article [d-FuzzStream: A Dispersion-Based Fuzzy Data Stream Clustering](https://doi.org/10.1109/FUZZ-IEEE.2018.8491534).
 
-## Content of repository
+## Content of the repository
 * [Source code](d_fuzzstream/__init__.py)
 * [Review of the article (russian)](report/main.pdf)
 * [Testing code (demo generator)](make_gif.py)
