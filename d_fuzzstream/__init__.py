@@ -101,7 +101,6 @@ class SummaryStructure:
         for i_fmic in self.fmics:
             m_degree = m_degrees[i_fmic]
             dist = all_dist[i_fmic]
-            #i_fmic.SSD += (m_degree**self.fuzziness) * (dist**2)
             i_fmic.SSD += m_degree * (dist**2)
             i_fmic.CF += np.array(i_example) * m_degree
             i_fmic.N += 1
