@@ -11,4 +11,5 @@ Python implementation of the fuzzy data stream clustering algorithm from the art
 ## Demonstration
 
 Colored dots represent data stream examples from the dataset [Bench1_11k](https://github.com/vpozdnyakov/DS_Datasets/tree/master/Synthetic/Non-Stationary/Bench1_11k). Blue circles represent FMiCs, and their radiusis are calculated with respect to the Algorithm 1 from the article — the minimum distance to the nearest FMiC’s prototype if N=1 and the fuzzy dispersion otherwise.
+
 ![online clustering](gif/ds_demo.gif)
